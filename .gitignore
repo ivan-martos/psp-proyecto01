@@ -1,0 +1,22 @@
+# Archivos compilados y empaquetados
+*.class
+*.jar
+*.war
+
+# Carpetas de salida de compilación
+out/
+target/
+build/
+
+# Configuración local de IntelliJ IDEA (Evita que sus rutas locales choquen)
+.idea/
+*.iml
+*.iws
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs y bases de datos locales
+*.log
+*.sqlite
