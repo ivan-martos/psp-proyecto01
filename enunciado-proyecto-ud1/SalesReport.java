@@ -29,8 +29,13 @@ public class SalesReport {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // TODO fase 1: lanzar un ShopSummary para la tienda 1 con ProcessBuilder y javaCommand(),
-        //      heredando su entrada y su salida (inheritIO()), y escribir su PID y su código de salida.
+        ProcessBuilder pb  = new ProcessBuilder(javaCommand("ShopSummary", "1"));
+        pb.inheritIO();
+        Process child =  pb.start();
+        int exitCode = child.waitFor();
+        System.out.printf("PID process son : %d  | exit code: %d%n",child.pid(), exitCode);
         // TODO fase 2: sustituir lo anterior por el informe uno a uno: report(false).
+
         // TODO fase 5: hacer el informe uno a uno y después todos a la vez, y escribir cuántas
         //      veces más rápido va el segundo.
     }
