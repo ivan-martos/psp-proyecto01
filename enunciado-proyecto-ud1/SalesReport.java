@@ -29,15 +29,20 @@ public class SalesReport {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // TODO fase 1: lanzar un ShopSummary para la tienda 1 con ProcessBuilder y javaCommand(),
-        ProcessBuilder pb  = new ProcessBuilder(javaCommand("ShopSummary", "1"));
-        pb.inheritIO();
-        Process child =  pb.start();
-        int exitCode = child.waitFor();
-        System.out.printf("PID process son : %d  | exit code: %d%n",child.pid(), exitCode);
+        //ProcessBuilder pb  = new ProcessBuilder(javaCommand("ShopSummary", "1"));
+       // pb.inheritIO();
+        //Process child =  pb.start();
+       // int exitCode = child.waitFor();
+        //System.out.printf("PID process son : %d  | exit code: %d%n",child.pid(), exitCode);
         // TODO fase 2: sustituir lo anterior por el informe uno a uno: report(false).
-        report(false);
+        long sequencialTime = report(false);
         // TODO fase 5: hacer el informe uno a uno y después todos a la vez, y escribir cuántas
         //      veces más rápido va el segundo.
+        long parallelTime = report(true);
+        double moreFast = (double) sequencialTime / parallelTime;
+        System.out.printf("El tiempo paralelo es %f más rápido que el secuencial",moreFast);
+        double timeDifference = (double) sequencialTime - parallelTime;
+        System.out.printf("hay uan diferencia de tiempo de  %f ms del paralelo al secuencial", timeDifference);
     }
 
     /**
@@ -51,7 +56,33 @@ public class SalesReport {
      */
     static long report(boolean allAtOnce) throws IOException, InterruptedException {
         // TODO fases 2 y 5
-        return 0;
+        totalUnits = 0;
+        totalCents = 0;
+        failedShops = 0;
+        long startTime = System.currentTimeMillis();
+        if(!allAtOnce){
+            for (int i = 1; i <= SHOPS; i++) {
+                Process hijo = launch(i);
+                collect(hijo, i);
+            }
+        }else {
+            List<Process> processes = new ArrayList<>();
+            for (int i = 1; i <= SHOPS; i++) {
+                processes.add(launch(i));
+            }
+            for (int i = 1; i <= SHOPS; i++) {
+                collect(processes.get(i - 1), i); //-1 porque las listas empiezan en 0, así desde la primera posición
+            }
+        }
+            long finalTime = System.currentTimeMillis();
+            long fullTime = finalTime-startTime;
+            System.out.printf(ES, "Total: %d units, %.2f €%n", totalUnits,totalCents/100.0);
+
+        if(failedShops>0){
+            System.out.printf("Tiendas con problemas %d%n",failedShops);
+        }
+
+        return fullTime;
     }
 
     /**
