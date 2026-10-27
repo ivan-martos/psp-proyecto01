@@ -35,7 +35,7 @@ public class SalesReport {
         int exitCode = child.waitFor();
         System.out.printf("PID process son : %d  | exit code: %d%n",child.pid(), exitCode);
         // TODO fase 2: sustituir lo anterior por el informe uno a uno: report(false).
-
+        report(false);
         // TODO fase 5: hacer el informe uno a uno y después todos a la vez, y escribir cuántas
         //      veces más rápido va el segundo.
     }
@@ -63,7 +63,9 @@ public class SalesReport {
      */
     static Process launch(int shop) throws IOException {
         // TODO fase 2
-        return null;
+        ProcessBuilder pb = new ProcessBuilder(javaCommand("ShopSummary", String.valueOf(shop)));
+        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        return pb.start();
     }
 
     /**
@@ -80,6 +82,31 @@ public class SalesReport {
      */
     static void collect(Process child, int shop) throws IOException, InterruptedException {
         // TODO fases 2 y 3
+        boolean finish = child.waitFor(TIMEOUT, TimeUnit.SECONDS);
+        if(!finish){
+            child.destroy();
+            System.out.printf("La tienda %d no ha respondido a tiempo%n", shop);
+            failedShops++;
+            return;
+        }
+        int exitCode = child.exitValue();
+        if(exitCode!=0){
+            System.out.printf("LA tienda %d ha fallado con el codigo: %d.%n", shop, child.exitValue());
+            failedShops++;
+            return;
+        }
+        BufferedReader reader = child.inputReader();
+        String line = reader.readLine();
+        if(line!=null){
+            String[] partes = line.split(";");
+            long units = Long.parseLong(partes[0]);
+            long cents = Long.parseLong(partes[1]);
+            Double euros = cents / 100.0;
+            System.out.printf(ES, "El PID es: %d  | units: %d  | cents %.2f €%n",child.pid(),units,euros );
+            totalUnits += units;
+            totalCents += cents;
+        }
+
     }
 
     /**
