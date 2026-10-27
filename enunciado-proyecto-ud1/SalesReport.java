@@ -4,17 +4,16 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Proceso padre del informe de ventas (proyecto A01.5). Esqueleto: completad los TODO en la fase
  * que indica cada uno.
- *
+ * <p>
  * Lanza un proceso hijo ShopSummary por cada tienda, recoge sus resultados, comprueba sus
  * códigos de salida y escribe el informe con el total. Lo hace dos veces, para comparar el
  * tiempo: primero uno a uno (cada hijo cuando ha terminado el anterior) y después todos a la
  * vez. La salida de error de los hijos se ve en la consola del padre.
- *
+ * <p>
  * Uso: java SalesReport
  */
 public class SalesReport {
@@ -28,9 +27,28 @@ public class SalesReport {
     static int failedShops = 0;  // tiendas que han fallado o no han respondido a tiempo (fase 3)
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        // TODO fase 1: lanzar un ShopSummary para la tienda 1 con ProcessBuilder y javaCommand(),
+        /* TODO fase 1: lanzar un ShopSummary para la tienda 1 con ProcessBuilder y javaCommand(),
         //      heredando su entrada y su salida (inheritIO()), y escribir su PID y su código de salida.
+        ProcessBuilder pb = new ProcessBuilder(javaCommand("ShopSummary", "1")); //Le pasas solo 1 para que pueda trabajar el integer sobre el
+
+        //Le damos salida por la terminal
+        pb.inheritIO();
+
+        //Iniciamos el hijo y sacamos su PID:
+        Process hijo = pb.start();
+        System.out.println("El PID del hijo es: " + hijo.pid());
+        //El codigo de salida del hijo es:
+        System.out.println("El codigo de salida es: " + hijo.waitFor());
+
+        Comentamos la fase 1 entera para hacer funcionar la 2.
+         */
         // TODO fase 2: sustituir lo anterior por el informe uno a uno: report(false).
+
+        // Lanzamos el hijo de la tienda 1 y guardamos el proceso para poder usarlo después
+        Process hijo = launch(1);
+        // Le damos ese hijo a collect para que lea por la tubería lo que ha escrito
+        collect(hijo, 1);
+
         // TODO fase 5: hacer el informe uno a uno y después todos a la vez, y escribir cuántas
         //      veces más rápido va el segundo.
     }
@@ -57,13 +75,21 @@ public class SalesReport {
      * @return el proceso hijo, ya lanzado
      */
     static Process launch(int shop) throws IOException {
-        // TODO fase 2
-        return null;
+        ProcessBuilder pb = new ProcessBuilder(javaCommand("ShopSummary", String.valueOf(shop)));
+        //Se debe pasar un String.valueOF, porque la variable shop es int, javaCommand trabaja con string.
+        //Hereda la salida:
+        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        // El error del hijo sale en mi consola; la salida normal la leo yo en collect
+        //Iniciamos el hijo y devolvemos:
+        Process hijo = pb.start();
+        return hijo;
+        //Fase 2 hecha
+
     }
 
     /**
      * Recoge el resultado de un hijo y lo suma a los totales.
-     *
+     * <p>
      * Fase 2: lee su resultado de la salida estándar ("unidades;céntimos"), escribe la línea de la
      * tienda con su PID, las unidades y el importe en euros, y lo suma a totalUnits y totalCents.
      * Fase 3: antes, lo espera como mucho TIMEOUT segundos y, si no ha terminado, lo termina. Si
@@ -72,10 +98,29 @@ public class SalesReport {
      *
      * @param child el proceso hijo
      * @param shop  número de la tienda de ese hijo
+     * @return
      */
     static void collect(Process child, int shop) throws IOException, InterruptedException {
-        // TODO fases 2 y 3
+        //Dentro de collect tenemos ya una variable proceso creada, en este caso en child
+
+        //Tenemos que leer lo que escribe el hijo:
+        BufferedReader leerDatos = child.inputReader();
+
+        //Creamos una variable que lee la linea con el resultado:
+        String leerLineas = leerDatos.readLine();
+        System.out.println("Los datos economicos dentro del programa son: " + leerLineas);
+
+
+        //Debemos crear un array para poder dividir cuantas veces ocurra
+        String[] nuevaForma = leerLineas.split(";");
+
+
+        System.out.println(nuevaForma[0]); //Prueba. Borrar luego
+
+
+
     }
+
 
     /**
      * Construye el comando que ejecuta la clase indicada con la misma JVM y el mismo classpath que
@@ -92,4 +137,6 @@ public class SalesReport {
         }
         return command;
     }
+
 }
+
