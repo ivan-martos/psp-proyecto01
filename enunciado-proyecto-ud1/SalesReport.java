@@ -43,7 +43,7 @@ public class SalesReport {
         Comentamos la fase 1 entera para hacer funcionar la 2.
          */
         // TODO fase 2: sustituir lo anterior por el informe uno a uno: report(false).
-            report(false);
+        report(false);
 
 
         // TODO fase 5: hacer el informe uno a uno y después todos a la vez, y escribir cuántas
@@ -71,7 +71,8 @@ public class SalesReport {
         }
         //Calculamos el tiempo que tarda:
         long tiempoTotal = System.currentTimeMillis() - horaInicio;
-        System.out.println("Total de Unidades: " + totalUnits + " | " + " Total Euros " + (totalCents/ 100.0) + " €" );
+        System.out.println("TOTAL | " + String.format(ES, "%,d", totalUnits) + " unidades | "
+                + String.format(ES, "%,.2f", totalCents / 100.0) + " €");
         System.out.println("El tiempo total es: " + tiempoTotal + " ms");
 
         return tiempoTotal;
@@ -93,7 +94,7 @@ public class SalesReport {
         //Iniciamos el hijo y devolvemos:
         Process hijo = pb.start();
         return hijo;
-        //Fase 2 hecha
+
 
     }
 
@@ -129,8 +130,9 @@ public class SalesReport {
         totalCents += centimos; //Sumamos los céntimos de esta tienda al total
 
         //Mostrar por pantalla nºtienda, PID, unidades, dinero:
-        System.out.println("Tienda " + shop + " | PID " + child.pid() +
-                " | " + unidades + " unidades | " + (centimos / 100.0) + " €");
+        // String.format pone los números modo español: puntos en los miles y coma en los decimales.
+        // %,d es para números enteros (unidades) y %,.2f para números con 2 decimales (euros)
+        System.out.println("Tienda " + shop + " | PID " + child.pid() + " | " + String.format(ES, "%,d", unidades) + " unidades | " + String.format(ES, "%,.2f", centimos / 100.0) + " €");
 
 
 
