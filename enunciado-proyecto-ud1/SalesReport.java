@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Proceso padre del informe de ventas (proyecto A01.5). Esqueleto: completad los TODO en la fase
@@ -63,6 +64,7 @@ public class SalesReport {
         // TODO fases 2 y 5
         totalCents = 0; //Iniciamos a 0 para que no se sumen los totales de la vez anterior
         totalUnits = 0; //Iniciamos a 0 para que no se sumen los totales de la vez anterior
+        failedShops = 0; //Se pone a 0 para que sume de 1 en 1 en caso de que alguna tienda de error
         long horaInicio = System.currentTimeMillis(); //Esta variable nos sirve para guardar la hora de inicio
         for (int i = 1; i <= SHOPS ; i++) { //Bucle que recorra todas las tiendas
             Process hijo = launch(i);
@@ -73,6 +75,7 @@ public class SalesReport {
         long tiempoTotal = System.currentTimeMillis() - horaInicio;
         System.out.println("TOTAL | " + String.format(ES, "%,d", totalUnits) + " unidades | "
                 + String.format(ES, "%,.2f", totalCents / 100.0) + " €");
+        System.out.println("El numero de tiendas que ha fallado es: " + failedShops);
         System.out.println("El tiempo total es: " + tiempoTotal + " ms");
 
         return tiempoTotal;
@@ -112,14 +115,30 @@ public class SalesReport {
      * @return
      */
     static void collect(Process child, int shop) throws IOException, InterruptedException {
-        //Dentro de collect tenemos ya una variable proceso creada, en este caso en child
+        //Una vez realizada la segunda fase, tenemos que comprar si el hijo lee bien
+        boolean comprobarHijo = child.waitFor(TIMEOUT, TimeUnit.SECONDS);
 
+        //Comprobar que pasa si el hijo no termina en el tiempo esperado
+        if (comprobarHijo != true){ //Si hijo es distinto de true, osea si no acaba a tiempo:
+            child.destroy();
+            System.out.println("La tienda: " + shop + " no ha respondido a tiempo");
+            //Se destruye al hijo y se informa que tienda ha sido.
+            failedShops++; //Se suma 1 a error de tienda.
+            return;
+        }
+        //Ahora debemos comprobar si el codigo de salida del hijo no es 0
+        if (child.exitValue() != 0) { //Si el codigo de salida no es 0
+            System.out.println("La tienda numero " + shop + " ha fallado, con el codigo de salida " + child.exitValue());
+            failedShops++; //Se suma 1 a error de tienda.
+            return;
+        }
+
+        //Dentro de collect tenemos ya una variable proceso creada, en este caso es child
         //Tenemos que leer lo que escribe el hijo:
         BufferedReader leerDatos = child.inputReader();
 
         //Creamos una variable que lee la linea con el resultado:
         String leerLineas = leerDatos.readLine();
-
 
         //Debemos crear un array para poder dividir cuantas veces ocurra
         String[] nuevaForma = leerLineas.split(";");
