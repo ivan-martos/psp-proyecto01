@@ -43,11 +43,8 @@ public class SalesReport {
         Comentamos la fase 1 entera para hacer funcionar la 2.
          */
         // TODO fase 2: sustituir lo anterior por el informe uno a uno: report(false).
+            report(false);
 
-        // Lanzamos el hijo de la tienda 1 y guardamos el proceso para poder usarlo después
-        Process hijo = launch(1);
-        // Le damos ese hijo a collect para que lea por la tubería lo que ha escrito
-        collect(hijo, 1);
 
         // TODO fase 5: hacer el informe uno a uno y después todos a la vez, y escribir cuántas
         //      veces más rápido va el segundo.
@@ -64,7 +61,20 @@ public class SalesReport {
      */
     static long report(boolean allAtOnce) throws IOException, InterruptedException {
         // TODO fases 2 y 5
-        return 0;
+        totalCents = 0; //Iniciamos a 0 para que no se sumen los totales de la vez anterior
+        totalUnits = 0; //Iniciamos a 0 para que no se sumen los totales de la vez anterior
+        long horaInicio = System.currentTimeMillis(); //Esta variable nos sirve para guardar la hora de inicio
+        for (int i = 1; i <= SHOPS ; i++) { //Bucle que recorra todas las tiendas
+            Process hijo = launch(i);
+            collect(hijo, i);
+
+        }
+        //Calculamos el tiempo que tarda:
+        long tiempoTotal = System.currentTimeMillis() - horaInicio;
+        System.out.println("Total de Unidades: " + totalUnits + " | " + " Total Euros " + (totalCents/ 100.0) + " €" );
+        System.out.println("El tiempo total es: " + tiempoTotal + " ms");
+
+        return tiempoTotal;
     }
 
     /**
@@ -108,14 +118,20 @@ public class SalesReport {
 
         //Creamos una variable que lee la linea con el resultado:
         String leerLineas = leerDatos.readLine();
-        System.out.println("Los datos economicos dentro del programa son: " + leerLineas);
 
 
         //Debemos crear un array para poder dividir cuantas veces ocurra
         String[] nuevaForma = leerLineas.split(";");
+        long unidades = Long.parseLong(nuevaForma[0]); // unidades vendidas en la tienda
+        long centimos = Long.parseLong(nuevaForma[1]); // dinero total de la tienda, en céntimos
 
+        totalUnits += unidades; //Sumamos a las unidades el total
+        totalCents += centimos; //Sumamos los céntimos de esta tienda al total
 
-        System.out.println(nuevaForma[0]); //Prueba. Borrar luego
+        //Mostrar por pantalla nºtienda, PID, unidades, dinero:
+        System.out.println("Tienda " + shop + " | PID " + child.pid() +
+                " | " + unidades + " unidades | " + (centimos / 100.0) + " €");
+
 
 
 
