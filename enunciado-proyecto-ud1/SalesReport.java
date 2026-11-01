@@ -44,11 +44,18 @@ public class SalesReport {
         Comentamos la fase 1 entera para hacer funcionar la 2.
          */
         // TODO fase 2: sustituir lo anterior por el informe uno a uno: report(false).
-        report(false);
+        // Hacemos el informe uno a uno (cada tienda espera a que acabe la anterior) y guardamos lo que tarda
+        long tiempoUno = report(false);
 
 
         // TODO fase 5: hacer el informe uno a uno y después todos a la vez, y escribir cuántas
         //      veces más rápido va el segundo.
+        // Hacemos el informe con todas las tiendas a la vez y guardamos lo que tarda
+        long tiempoConjunto = report(true);
+        // Dividimos un tiempo entre el otro para saber cuántas veces más rápido va todo a la vez.
+        // El (double) es para que no se pierdan los decimales y el String.format deja solo 2
+        System.out.println("Todos a la vez va " + String.format(ES, "%.2f", (double) tiempoUno / tiempoConjunto) + " veces más rápido");
+
     }
 
     /**
@@ -66,11 +73,25 @@ public class SalesReport {
         totalUnits = 0; //Iniciamos a 0 para que no se sumen los totales de la vez anterior
         failedShops = 0; //Se pone a 0 para que sume de 1 en 1 en caso de que alguna tienda de error
         long horaInicio = System.currentTimeMillis(); //Esta variable nos sirve para guardar la hora de inicio
-        for (int i = 1; i <= SHOPS ; i++) { //Bucle que recorra todas las tiendas
-            Process hijo = launch(i);
-            collect(hijo, i);
+        if (allAtOnce) {
+            //Debemos guardar las 8 tiendas. Se hará mediante array
+            Process tiendasTotales[] = new Process[SHOPS];
+            for (int i = 1; i <= SHOPS; i++) {
+                tiendasTotales[i - 1] = launch(i); // la tienda i se guarda en el hueco i-1
+            }
+            for (int i = 1; i <= SHOPS; i++) {
+                collect(tiendasTotales[i - 1], i);
 
+            }
+
+        } else {
+            for (int i = 1; i <= SHOPS; i++) { //Bucle que recorra todas las tiendas
+                Process hijo = launch(i);
+                collect(hijo, i);
+
+            }
         }
+
         //Calculamos el tiempo que tarda:
         long tiempoTotal = System.currentTimeMillis() - horaInicio;
         System.out.println("TOTAL | " + String.format(ES, "%,d", totalUnits) + " unidades | "
@@ -119,7 +140,7 @@ public class SalesReport {
         boolean comprobarHijo = child.waitFor(TIMEOUT, TimeUnit.SECONDS);
 
         //Comprobar que pasa si el hijo no termina en el tiempo esperado
-        if (comprobarHijo != true){ //Si hijo es distinto de true, osea si no acaba a tiempo:
+        if (comprobarHijo != true) { //Si hijo es distinto de true, osea si no acaba a tiempo:
             child.destroy();
             System.out.println("La tienda: " + shop + " no ha respondido a tiempo");
             //Se destruye al hijo y se informa que tienda ha sido.
@@ -152,8 +173,6 @@ public class SalesReport {
         // String.format pone los números modo español: puntos en los miles y coma en los decimales.
         // %,d es para números enteros (unidades) y %,.2f para números con 2 decimales (euros)
         System.out.println("Tienda " + shop + " | PID " + child.pid() + " | " + String.format(ES, "%,d", unidades) + " unidades | " + String.format(ES, "%,.2f", centimos / 100.0) + " €");
-
-
 
 
     }
