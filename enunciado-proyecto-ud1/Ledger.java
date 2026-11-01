@@ -55,9 +55,9 @@ public class Ledger {
             Thread.sleep(pause);
         }
         // Cuando ya no llegan más tickets, escribimos cuántos ha habido y el total en euros
-        System.out.println("Registro: " + ticketsLeidos + " tickets, total "
-                + String.format(Locale.of("es", "ES"), "%,.2f", totalCentimos / 100.0) + " €");
-
+// Cuando ya no llegan más tickets, escribimos cuántos ha habido y el total en euros
+// %.2f hace que salgan los euros con 2 decimales
+        System.out.println("Registro: " + ticketsLeidos + " tickets, total " + String.format("%.2f", totalCentimos / 100.0) + " €");
 
     }
 }
