@@ -75,7 +75,7 @@ Al final, el padre espera a los dos con `waitFor()`.
 
 ## Tiempos
 
-Lo hemos probado en un ordenador con [X] núcleos:
+Lo hemos probado en un ordenador con 8 núcleos (16 hilos):
 
 | Modo | Tiempo |
 |---|---|
@@ -84,12 +84,17 @@ Lo hemos probado en un ordenador con [X] núcleos:
 
 Todos a la vez va unas **7,13 veces más rápido**.
 
-¿Por qué no va 8 veces más rápido si hay 8 tiendas? Porque no todo se puede hacer en paralelo:
+Como el ordenador tiene 8 núcleos, las 8 tiendas pueden trabajar a la vez, cada una en su
+núcleo. Por eso sale tan cerca de 8. Pero no llega del todo a 8 porque hay partes que no se
+hacen en paralelo:
 - Arrancar cada hijo cuesta un poco, porque hay que abrir una Java nueva para cada uno, y eso
   no se acelera.
 - El padre sigue recogiendo los resultados uno detrás de otro.
-- Si el ordenador tiene menos de 8 núcleos, no puede tener las 8 tiendas trabajando de verdad a
-  la vez, y algunas tienen que esperar su turno.
+- Además, mientras tanto el ordenador tiene otras cosas abiertas (IntelliJ, el sistema...) que
+  también usan los núcleos.
+
+En un ordenador con menos de 8 núcleos iría todavía más lento, porque algunas tiendas tendrían
+que esperar su turno.
 
 ## Caja en directo
 
