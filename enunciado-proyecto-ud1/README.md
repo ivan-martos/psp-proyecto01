@@ -13,7 +13,7 @@ un registro que los va sumando, conectados por una tubería.
 |---|---|
 | Gabriel Valencia Bañares | |
 | Iván Martos Vivas | |
-| Juan Alberto | |
+| Juan Alberto Arazola Alvarez | |
 
 ## Cómo se ejecuta
 
