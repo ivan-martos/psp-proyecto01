@@ -29,32 +29,32 @@ public class Ledger {
         //      estándar el número de tickets y el total en euros.
 
         //Tenemos que crear dos contadores:
-        int ticketsLeidos = 0;
-        long totalCentimos = 0;
+        int ticketCount = 0;
+        long totalCents = 0;
         //Leemos la entrada del programa
-        BufferedReader lectorEntrada = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         //Bucle que lea lineas y mientras no sea null sigue
-        String leeLineas;
-        while ((leeLineas = lectorEntrada.readLine()) != null) {
+        String line;
+        while ((line = reader.readLine()) != null) {
             // Partimos el ticket por el ";" -> [0] es el número y [1] los céntimos
-            String[] partes = leeLineas.split(";");
+            String[] parts = line.split(";");
 
             // Pasamos los céntimos de texto a número
-            long centimos = Long.parseLong(partes[1]);
+            long cents = Long.parseLong(parts[1]);
 
             // Lo sumamos al total
-            totalCentimos += centimos;
+            totalCents += cents;
 
             // Contamos un ticket más
-            ticketsLeidos++;
+            ticketCount++;
 
             //Miramos la hora y qué ticket hemos leído
-            System.err.println(LocalTime.now().format(TIME) + " registro: ticket " + partes[0]);
+            System.err.println(LocalTime.now().format(TIME) + " registro: ticket " + parts[0]);
             //Pausamos:
             Thread.sleep(pause);
         }
         // Cuando ya no llegan más tickets, escribimos cuántos ha habido y el total en euros
         // %.2f hace que salgan los euros con 2 decimales
-        System.out.println("Registro: " + ticketsLeidos + " tickets, total " + String.format("%.2f", totalCentimos / 100.0) + " euros");
+        System.out.println("Registro: " + ticketCount + " tickets, total " + String.format("%.2f", totalCents / 100.0) + " euros");
     }
 }

@@ -24,7 +24,7 @@ public class LiveCashRegister {
         System.out.println("Escenario 1: caja lenta, registro rápido");
         runScenario("5", "500", "0");
 
-    // Escenario 2: la caja saca los tickets de golpe y el registro tarda en leerlos
+        // Escenario 2: la caja saca los tickets de golpe y el registro tarda en leerlos
         System.out.println(" Escenario 2: caja rápida, registro lento ");
         runScenario("10", "0", "300");
     }
@@ -43,23 +43,23 @@ public class LiveCashRegister {
         // TODO fase 4
         //Creamos los procesos para poder trabajar con las clases
         // Creamos un ProcessBuilder para la caja y otro para el registro, con su clase y sus argumentos
-        ProcessBuilder pbCaja = new ProcessBuilder(javaCommand("CashRegister", tickets, registerPause));
-        ProcessBuilder pbRegistro = new ProcessBuilder(javaCommand("Ledger", ledgerPause));
+        ProcessBuilder registerBuilder = new ProcessBuilder(javaCommand("CashRegister", tickets, registerPause));
+        ProcessBuilder ledgerBuilder = new ProcessBuilder(javaCommand("Ledger", ledgerPause));
 
         //Rederigimos los procesos.
-        pbCaja.redirectError(ProcessBuilder.Redirect.INHERIT);
-        pbRegistro.redirectError(ProcessBuilder.Redirect.INHERIT);
+        registerBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
+        ledgerBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
         // El total del registro (su salida normal) también sale en nuestra consola.
         // La salida normal de la caja NO, porque esa va por la tubería al registro
-        pbRegistro.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        ledgerBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 
         // Lanzamos la caja y el registro unidos por una tubería: lo que escribe la caja le llega al registro
-        List<Process> procesos = ProcessBuilder.startPipeline(List.of(pbCaja, pbRegistro));
+        List<Process> processes = ProcessBuilder.startPipeline(List.of(registerBuilder, ledgerBuilder));
 
         // Esperamos a que termine la caja
-        procesos.get(0).waitFor();
+        processes.get(0).waitFor();
         // Y a que termine el registro
-        procesos.get(1).waitFor();
+        processes.get(1).waitFor();
     }
 
     /**

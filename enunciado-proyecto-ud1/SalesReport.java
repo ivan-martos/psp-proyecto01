@@ -45,16 +45,16 @@ public class SalesReport {
          */
         // TODO fase 2: sustituir lo anterior por el informe uno a uno: report(false).
         // Hacemos el informe uno a uno (cada tienda espera a que acabe la anterior) y guardamos lo que tarda
-        long tiempoUno = report(false);
+        long oneByOneTime = report(false);
 
 
         // TODO fase 5: hacer el informe uno a uno y después todos a la vez, y escribir cuántas
         //      veces más rápido va el segundo.
         // Hacemos el informe con todas las tiendas a la vez y guardamos lo que tarda
-        long tiempoConjunto = report(true);
+        long allAtOnceTime = report(true);
         // Dividimos un tiempo entre el otro para saber cuántas veces más rápido va todo a la vez.
         // El (double) es para que no se pierdan los decimales y el String.format deja solo 2
-        System.out.println("Todos a la vez va " + String.format(ES, "%.2f", (double) tiempoUno / tiempoConjunto) + " veces más rápido");
+        System.out.println("Todos a la vez va " + String.format(ES, "%.2f", (double) oneByOneTime / allAtOnceTime) + " veces más rápido");
 
     }
 
@@ -72,34 +72,34 @@ public class SalesReport {
         totalCents = 0; //Iniciamos a 0 para que no se sumen los totales de la vez anterior
         totalUnits = 0; //Iniciamos a 0 para que no se sumen los totales de la vez anterior
         failedShops = 0; //Se pone a 0 para que sume de 1 en 1 en caso de que alguna tienda de error
-        long horaInicio = System.currentTimeMillis(); //Esta variable nos sirve para guardar la hora de inicio
+        long startTime = System.currentTimeMillis(); //Esta variable nos sirve para guardar la hora de inicio
         if (allAtOnce) {
             //Debemos guardar las 8 tiendas. Se hará mediante array
-            Process tiendasTotales[] = new Process[SHOPS];
+            Process children[] = new Process[SHOPS];
             for (int i = 1; i <= SHOPS; i++) {
-                tiendasTotales[i - 1] = launch(i); // la tienda i se guarda en el hueco i-1
+                children[i - 1] = launch(i); // la tienda i se guarda en el hueco i-1
             }
             for (int i = 1; i <= SHOPS; i++) {
-                collect(tiendasTotales[i - 1], i);
+                collect(children[i - 1], i);
 
             }
 
         } else {
             for (int i = 1; i <= SHOPS; i++) { //Bucle que recorra todas las tiendas
-                Process hijo = launch(i);
-                collect(hijo, i);
+                Process child = launch(i);
+                collect(child, i);
 
             }
         }
 
         //Calculamos el tiempo que tarda:
-        long tiempoTotal = System.currentTimeMillis() - horaInicio;
+        long totalTime = System.currentTimeMillis() - startTime;
         System.out.println("TOTAL | " + String.format(ES, "%,d", totalUnits) + " unidades | "
                 + String.format(ES, "%,.2f", totalCents / 100.0) + " €");
         System.out.println("El numero de tiendas que ha fallado es: " + failedShops);
-        System.out.println("El tiempo total es: " + tiempoTotal + " ms");
+        System.out.println("El tiempo total es: " + totalTime + " ms");
 
-        return tiempoTotal;
+        return totalTime;
     }
 
     /**
@@ -114,10 +114,10 @@ public class SalesReport {
         //Se debe pasar un String.valueOF, porque la variable shop es int, javaCommand trabaja con string.
         //Hereda la salida:
         pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-        // El error del hijo sale en mi consola; la salida normal la leo yo en collect
-        //Iniciamos el hijo y devolvemos:
-        Process hijo = pb.start();
-        return hijo;
+        // El error del child sale en mi consola; la salida normal la leo yo en collect
+        //Iniciamos el child y devolvemos:
+        Process child = pb.start();
+        return child;
 
 
     }
@@ -137,10 +137,10 @@ public class SalesReport {
      */
     static void collect(Process child, int shop) throws IOException, InterruptedException {
         //Una vez realizada la segunda fase, tenemos que comprar si el hijo lee bien
-        boolean comprobarHijo = child.waitFor(TIMEOUT, TimeUnit.SECONDS);
+        boolean checkChild = child.waitFor(TIMEOUT, TimeUnit.SECONDS);
 
         //Comprobar que pasa si el hijo no termina en el tiempo esperado
-        if (comprobarHijo != true) { //Si hijo es distinto de true, osea si no acaba a tiempo:
+        if (checkChild != true) { //Si hijo es distinto de true, osea si no acaba a tiempo:
             child.destroy();
             System.out.println("La tienda: " + shop + " no ha respondido a tiempo");
             //Se destruye al hijo y se informa que tienda ha sido.
@@ -156,23 +156,23 @@ public class SalesReport {
 
         //Dentro de collect tenemos ya una variable proceso creada, en este caso es child
         //Tenemos que leer lo que escribe el hijo:
-        BufferedReader leerDatos = child.inputReader();
+        BufferedReader reader = child.inputReader();
 
         //Creamos una variable que lee la linea con el resultado:
-        String leerLineas = leerDatos.readLine();
+        String line = reader.readLine();
 
         //Debemos crear un array para poder dividir cuantas veces ocurra
-        String[] nuevaForma = leerLineas.split(";");
-        long unidades = Long.parseLong(nuevaForma[0]); // unidades vendidas en la tienda
-        long centimos = Long.parseLong(nuevaForma[1]); // dinero total de la tienda, en céntimos
+        String[] parts = line.split(";");
+        long units = Long.parseLong(parts[0]); // unidades vendidas en la tienda
+        long cents = Long.parseLong(parts[1]); // dinero total de la tienda, en céntimos
 
-        totalUnits += unidades; //Sumamos a las unidades el total
-        totalCents += centimos; //Sumamos los céntimos de esta tienda al total
+        totalUnits += units; //Sumamos a las unidades el total
+        totalCents += cents; //Sumamos los céntimos de esta tienda al total
 
         //Mostrar por pantalla nºtienda, PID, unidades, dinero:
         // String.format pone los números modo español: puntos en los miles y coma en los decimales.
         // %,d es para números enteros (unidades) y %,.2f para números con 2 decimales (euros)
-        System.out.println("Tienda " + shop + " | PID " + child.pid() + " | " + String.format(ES, "%,d", unidades) + " unidades | " + String.format(ES, "%,.2f", centimos / 100.0) + " €");
+        System.out.println("Tienda " + shop + " | PID " + child.pid() + " | " + String.format(ES, "%,d", units) + " unidades | " + String.format(ES, "%,.2f", cents / 100.0) + " €");
 
 
     }
