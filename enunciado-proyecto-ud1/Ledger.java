@@ -48,16 +48,13 @@ public class Ledger {
             // Contamos un ticket más
             ticketsLeidos++;
 
-            //Mostramos la hora:
-            System.err.println(LocalTime.now().format(TIME) + " registro: " + " ticket " + partes[0]);
-
+            //Miramos la hora y qué ticket hemos leído
+            System.err.println(LocalTime.now().format(TIME) + " registro: ticket " + partes[0]);
             //Pausamos:
             Thread.sleep(pause);
         }
         // Cuando ya no llegan más tickets, escribimos cuántos ha habido y el total en euros
-// Cuando ya no llegan más tickets, escribimos cuántos ha habido y el total en euros
-// %.2f hace que salgan los euros con 2 decimales
-        System.out.println("Registro: " + ticketsLeidos + " tickets, total " + String.format("%.2f", totalCentimos / 100.0) + " €");
-
+        // %.2f hace que salgan los euros con 2 decimales
+        System.out.println("Registro: " + ticketsLeidos + " tickets, total " + String.format("%.2f", totalCentimos / 100.0) + " euros");
     }
 }

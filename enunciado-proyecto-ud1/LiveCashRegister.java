@@ -6,10 +6,10 @@ import java.util.List;
 /**
  * Caja en directo (proyecto A01.5). Esqueleto: completad los TODO en la fase 4.
  * Se adapta del ProductorConsumidor del ejemplo 8.4.
- *
+ * <p>
  * Productor-consumidor entre dos procesos unidos por una tubería: la caja (CashRegister) emite
  * tickets y el registro (Ledger) los suma.
- *
+ * <p>
  * Uso: java LiveCashRegister
  */
 public class LiveCashRegister {
@@ -20,6 +20,13 @@ public class LiveCashRegister {
         //      y del registro, 0.
         //      Escenario 2, caja rápida y registro lento: 10 tickets; pausa de la caja, 0, y del
         //      registro, 300 ms.
+        // Escenario 1: la caja tarda en sacar tickets y el registro los lee al momento
+        System.out.println("Escenario 1: caja lenta, registro rápido");
+        runScenario("5", "500", "0");
+
+    // Escenario 2: la caja saca los tickets de golpe y el registro tarda en leerlos
+        System.out.println(" Escenario 2: caja rápida, registro lento ");
+        runScenario("10", "0", "300");
     }
 
     /**
@@ -34,6 +41,25 @@ public class LiveCashRegister {
     static void runScenario(String tickets, String registerPause, String ledgerPause)
             throws IOException, InterruptedException {
         // TODO fase 4
+        //Creamos los procesos para poder trabajar con las clases
+        // Creamos un ProcessBuilder para la caja y otro para el registro, con su clase y sus argumentos
+        ProcessBuilder pbCaja = new ProcessBuilder(javaCommand("CashRegister", tickets, registerPause));
+        ProcessBuilder pbRegistro = new ProcessBuilder(javaCommand("Ledger", ledgerPause));
+
+        //Rederigimos los procesos.
+        pbCaja.redirectError(ProcessBuilder.Redirect.INHERIT);
+        pbRegistro.redirectError(ProcessBuilder.Redirect.INHERIT);
+        // El total del registro (su salida normal) también sale en nuestra consola.
+        // La salida normal de la caja NO, porque esa va por la tubería al registro
+        pbRegistro.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+
+        // Lanzamos la caja y el registro unidos por una tubería: lo que escribe la caja le llega al registro
+        List<Process> procesos = ProcessBuilder.startPipeline(List.of(pbCaja, pbRegistro));
+
+        // Esperamos a que termine la caja
+        procesos.get(0).waitFor();
+        // Y a que termine el registro
+        procesos.get(1).waitFor();
     }
 
     /**

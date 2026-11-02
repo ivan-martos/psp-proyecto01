@@ -28,13 +28,11 @@ public class CashRegister {
         //Creamos un bucle que vaya desde 1 a tickets
         for (int i = 1; i <= tickets ; i++) {
             Thread.sleep(pause);
-            //Ahora debemos escribir dentro de nuestro ticket y mostrarlo por pantalla:
+            //Escribimos el ticket esto va por la tubería al registro
             System.out.println(i + ";" + random.nextInt(6000));
             //Debemos hacer una salida pero ahora de error:
-            System.err.println(LocalTime.now().format(TIME) +  " caja: " + " ticket " + i );
-
+            System.err.println(LocalTime.now().format(TIME) + " caja: ticket " + i);
         }
         //Debemos anotar el tiempo al terminar.
-        System.err.println(LocalTime.now().format(TIME) +  " caja: " + " fin " );
-    }
+        System.err.println(LocalTime.now().format(TIME) + " caja: fin");    }
 }
