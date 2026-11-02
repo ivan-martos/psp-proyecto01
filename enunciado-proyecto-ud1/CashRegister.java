@@ -1,3 +1,4 @@
+import java.sql.Time;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
@@ -24,6 +25,7 @@ public class CashRegister {
         // TODO fase 4: para cada ticket, del 1 a tickets, esperar la pausa, escribir en la salida
         //      estándar "número;céntimos" con un importe aleatorio y anotar en la salida de error
         //      la hora (TIME) y el número del ticket. Al terminar, anotar también la hora.
+
 
         //Creamos un bucle que vaya desde 1 a tickets
         for (int i = 1; i <= tickets ; i++) {
